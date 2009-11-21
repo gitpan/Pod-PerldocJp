@@ -1,0 +1,31 @@
+--- #YAML:1.0
+name:               Pod-PerldocJp
+version:            0.01
+abstract:           perldoc that also checks perldoc.jp
+author:
+    - Kenichi Ishigaki <ishigaki@cpan.org>
+license:            perl
+distribution_type:  module
+configure_requires:
+    ExtUtils::MakeMaker:  0
+build_requires:
+    ExtUtils::MakeMaker:  0
+requires:
+    Encode:               0
+    File::ShareDir:       1.00
+    LWP:                  0
+    Path::Extended:       0.12
+    Pod::Perldoc:         3.15
+    Pod::Simple:          3.08
+    Pod::Text:            3.13
+    Term::Encoding:       0
+    Test::More:           0.47
+    Test::UseAllModules:  0.10
+no_index:
+    directory:
+        - t
+        - inc
+generated_by:       ExtUtils::MakeMaker version 6.52
+meta-spec:
+    url:      http://module-build.sourceforge.net/META-spec-v1.4.html
+    version:  1.4
