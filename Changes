@@ -1,4 +1,8 @@
 Revision history for Pod-PerldocJp
 
+0.02  2009/11/25
+  - fixed infinite loop
+  - fixed pod
+
 0.01  2009/11/21
   - initial release
