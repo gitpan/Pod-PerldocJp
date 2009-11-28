@@ -12,7 +12,7 @@ use utf8;
 
 my $term_encoding = Term::Encoding::get_encoding() || 'utf-8';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 sub opt_J { shift->_elem('opt_J', @_) }
 
@@ -22,6 +22,9 @@ sub grand_search_init {
   if ($self->opt_J) {
     my $ua  = LWP::UserAgent->new(agent => "Pod-PerldocJp/$VERSION");
     my $dir = dir(dist_dir('Pod-PerldocJp'));
+    unless (-w $dir) {
+      $dir = dir(File::Spec->tmpdir, 'Pod-PerldocJp');
+    }
     foreach my $page (@$pages) {
       $self->aside("Searching for $page\n");
       if ($page =~ /^perl\w+$/) {
