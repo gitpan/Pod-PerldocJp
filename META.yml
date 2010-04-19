@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Pod-PerldocJp
-version:            0.07
+version:            0.08
 abstract:           perldoc that also checks perldoc.jp
 author:
     - Kenichi Ishigaki <ishigaki@cpan.org>

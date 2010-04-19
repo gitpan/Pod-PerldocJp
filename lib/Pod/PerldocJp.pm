@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use base 'Pod::Perldoc';
 use Encode;
+use Encode::Guess;
 use Term::Encoding;
 use LWP::UserAgent;
 use Path::Extended;
@@ -12,7 +13,7 @@ use utf8;
 
 my $term_encoding = Term::Encoding::get_encoding() || 'utf-8';
 
-our $VERSION = '0.07';
+our $VERSION = '0.08';
 
 sub opt_J { shift->_elem('opt_J', @_) }
 
@@ -44,18 +45,33 @@ sub grand_search_init {
        $ua->env_proxy;
     my $dir = $self->_perldocjp_dir();
 
+    my $api_url = $ENV{PERLDOCJP_SERVER} || 'http://perldoc.tcool.org/api';
+    $api_url =~ s|/+$||;
+
+    my @encodings =
+      split ' ', $ENV{PERLDOCJP_ENCODINGS} || 'euc-jp shiftjis utf8';
+
     foreach my $page (@$pages) {
       $self->aside("Searching for $page\n");
-      my $url = "http://perldoc.tcool.org/api/pod/$page";
-      my $file = $dir->file(uri_escape($page));
+      my $url = "$api_url/pod/$page";
+      my $file = $dir->file(uri_escape($page) . '.pod');
       unless ($file->size && $file->mtime > time - 60 * 60 * 24) {
         if (-w $dir) {
           my $res = $ua->mirror($url => $file->absolute);
           if ($file->size && (my $pod = $file->slurp) !~ /^=encoding\s/m) {
-            my $ctype = $res->header('Content-Type');
-            my ($charset) = $ctype =~ /charset\s*=\s*([\w-]+)/;
-            if ($charset) {
-              $pod = "=encoding $charset\n\n$pod";
+            # You can't trust perldoc.jp's Content-Type too much.
+            # (there're several utf-8 translations, though perldoc.jp
+            # is (or was) supposed to use euc-jp)
+            my $encoding;
+            my $enc = guess_encoding($pod, @encodings);
+            if (ref $enc) {
+              $encoding = $enc->name;
+            }
+            elsif (my $ctype = $res->header('Content-Type')) {
+              ($encoding) = $ctype =~ /charset\s*=\s*([\w-]+)/;
+            }
+            if ($encoding) {
+              $pod = "=encoding $encoding\n\n$pod";
               $file->save($pod);
             }
           }
