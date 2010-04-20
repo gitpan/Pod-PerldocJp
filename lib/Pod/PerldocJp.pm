@@ -13,7 +13,7 @@ use utf8;
 
 my $term_encoding = Term::Encoding::get_encoding() || 'utf-8';
 
-our $VERSION = '0.08';
+our $VERSION = '0.09';
 
 sub opt_J { shift->_elem('opt_J', @_) }
 
@@ -40,10 +40,12 @@ sub _perldocjp_dir {
 sub grand_search_init {
   my ($self, $pages, @found) = @_;
 
-  if ($self->opt_J) {
+  my $dir = $self->_perldocjp_dir()
+    or return $self->SUPER::grand_search_init($pages, @found);
+
+  if ($self->opt_J or ($pages->[0] && $pages->[0] =~ /^https?:/)) {
     my $ua  = LWP::UserAgent->new(agent => "Pod-PerldocJp/$VERSION");
        $ua->env_proxy;
-    my $dir = $self->_perldocjp_dir();
 
     my $api_url = $ENV{PERLDOCJP_SERVER} || 'http://perldoc.tcool.org/api';
     $api_url =~ s|/+$||;
@@ -53,27 +55,25 @@ sub grand_search_init {
 
     foreach my $page (@$pages) {
       $self->aside("Searching for $page\n");
-      my $url = "$api_url/pod/$page";
-      my $file = $dir->file(uri_escape($page) . '.pod');
+      my $url = ($page =~ /^https?:/) ? $page : "$api_url/pod/$page";
+      my $file = $dir->file(uri_escape($page, '^A-Za-z0-9_') . '.pod');
       unless ($file->size && $file->mtime > time - 60 * 60 * 24) {
-        if (-w $dir) {
-          my $res = $ua->mirror($url => $file->absolute);
-          if ($file->size && (my $pod = $file->slurp) !~ /^=encoding\s/m) {
-            # You can't trust perldoc.jp's Content-Type too much.
-            # (there're several utf-8 translations, though perldoc.jp
-            # is (or was) supposed to use euc-jp)
-            my $encoding;
-            my $enc = guess_encoding($pod, @encodings);
-            if (ref $enc) {
-              $encoding = $enc->name;
-            }
-            elsif (my $ctype = $res->header('Content-Type')) {
-              ($encoding) = $ctype =~ /charset\s*=\s*([\w-]+)/;
-            }
-            if ($encoding) {
-              $pod = "=encoding $encoding\n\n$pod";
-              $file->save($pod);
-            }
+        my $res = $ua->mirror($url => $file->absolute);
+        if ($res->is_success && (my $pod = $file->slurp) !~ /^=encoding\s/m) {
+          # You can't trust perldoc.jp's Content-Type too much.
+          # (there're several utf-8 translations, though perldoc.jp
+          # is (or was) supposed to use euc-jp)
+          my $encoding;
+          my $enc = guess_encoding($pod, @encodings);
+          if (ref $enc) {
+            $encoding = $enc->name;
+          }
+          elsif (my $ctype = $res->header('Content-Type')) {
+            ($encoding) = $ctype =~ /charset\s*=\s*([\w-]+)/;
+          }
+          if ($encoding) {
+            $pod = "=encoding $encoding\n\n$pod";
+            $file->save($pod);
           }
         }
       }
@@ -379,7 +379,7 @@ EOD
     $! = 0;
 
     my $usage = <<"EOF";
-perldoc [options] PageName|ModuleName|ProgramName...
+perldoc [options] PageName|ModuleName|ProgramName|URL...
 perldoc [options] -f BuiltinFunction
 perldoc [options] -q FAQRegex
 perldoc [options] -v PerlVariable
@@ -411,7 +411,8 @@ perldoc [options] -v PerlVariable
 PageName|ModuleName...
     表示したいドキュメント名です。「perlfunc」のようなページ名、
     モジュール名(「Term::Info」または「Term/Info」)、「perldoc」
-    のようなプログラム名を指定できます。
+    のようなプログラム名を指定できます。0.09からはPODのURLを指定
+    することもできるようになりました。
 
 BuiltinFunction
     Perlの関数名です。「perlfunc」からドキュメントを抽出します。
@@ -434,7 +435,7 @@ EOF
     $me =~ s,.*[/\\],,; # get basename
 
     my $usage =<<"EOUSAGE";
-使い方: $me [-h] [-V] [-r] [-i] [-D] [-t] [-u] [-m] [-n nroffer_program] [-l] [-J] [-T] [-d output_filename] [-o output_format] [-M FormatterModuleNameToUse] [-w formatter_option:option_value] [-L translation_code] [-F] [-X] PageName|ModuleName|ProgramName
+使い方: $me [-h] [-V] [-r] [-i] [-D] [-t] [-u] [-m] [-n nroffer_program] [-l] [-J] [-T] [-d output_filename] [-o output_format] [-M FormatterModuleNameToUse] [-w formatter_option:option_value] [-L translation_code] [-F] [-X] PageName|ModuleName|ProgramName|URL
        $me -f PerlFunc
        $me -q FAQKeywords
        $me -A PerlVar
