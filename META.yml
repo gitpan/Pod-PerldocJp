@@ -28,4 +28,4 @@ requires:
   Test::More: 0.47
   Test::UseAllModules: 0.10
   URI::Escape: 0
-version: 0.15
+version: 0.16
