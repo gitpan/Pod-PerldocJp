@@ -30,4 +30,4 @@ requires:
   URI::Escape: '0'
 resources:
   repository: https://github.com/charsbar/pod-perldocjp
-version: '0.17'
+version: '0.18'
