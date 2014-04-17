@@ -3,29 +3,31 @@ abstract: 'perldoc that also checks perldoc.jp'
 author:
   - 'Kenichi Ishigaki <ishigaki@cpan.org>'
 build_requires:
-  ExtUtils::MakeMaker: 0
+  ExtUtils::MakeMaker: '0'
 configure_requires:
-  ExtUtils::MakeMaker: 0
-dynamic_config: 1
-generated_by: 'ExtUtils::MakeMaker version 6.76, CPAN::Meta::Converter version 2.132620'
+  ExtUtils::MakeMaker::CPANfile: '0.06'
+dynamic_config: 0
+generated_by: 'ExtUtils::MakeMaker version 6.76, CPAN::Meta::Converter version 2.140640'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
-  version: 1.4
+  version: '1.4'
 name: Pod-PerldocJp
 no_index:
   directory:
     - t
     - inc
 requires:
-  Encode: 0
-  LWP: 0
-  Path::Extended: 0.12
-  Pod::Perldoc: 3.15
-  Pod::Simple: 3.08
-  Pod::Text: 3.13
-  Term::Encoding: 0
-  Test::More: 0.47
-  Test::UseAllModules: 0.10
-  URI::Escape: 0
-version: 0.16
+  Encode: '0'
+  HTTP::Tiny: '0'
+  Path::Tiny: '0.044'
+  Pod::Perldoc: '3.23'
+  Pod::Simple: '3.08'
+  Pod::Text: '3.13'
+  Term::Encoding: '0'
+  Test::More: '0.47'
+  Test::UseAllModules: '0.10'
+  URI::Escape: '0'
+resources:
+  repository: https://github.com/charsbar/pod-perldocjp
+version: '0.17'
